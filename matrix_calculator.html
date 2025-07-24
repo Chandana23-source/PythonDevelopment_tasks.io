@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Operations Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #e43f5a 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(83, 52, 131, 0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(228, 63, 90, 0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(15, 52, 96, 0.2) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 25px;
+            min-height: calc(100vh - 40px);
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .main-content {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            padding: 35px;
+            min-height: 700px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .logo h1 {
+            font-size: 1.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #64b5f6, #e91e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            font-size: 1em;
+            color: #b0b0b0;
+            line-height: 1.4;
+        }
+
+        .operations-section h3 {
+            color: #64b5f6;
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .operation-btn {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #ffffff;
+            font-size: 1.05em;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .operation-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            border-color: rgba(100, 181, 246, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .operation-btn.active {
+            background: linear-gradient(135deg, rgba(100, 181, 246, 0.2), rgba(233, 30, 99, 0.1));
+            border-color: rgba(100, 181, 246, 0.4);
+            box-shadow: 0 8px 20px rgba(100, 181, 246, 0.3);
+            color: #64b5f6;
+        }
+
+        .operation-btn span {
+            font-size: 1.3em;
+            min-width: 25px;
+        }
+
+        .history-section {
+            margin-top: 35px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .clear-history-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #e91e63, #ad1457);
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .clear-history-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(233, 30, 99, 0.4);
+        }
+
+        .welcome-screen {
+            text-align: center;
+            padding: 80px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+        }
+
+        .welcome-screen h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #64b5f6, #e91e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .welcome-screen p {
+            font-size: 1.3em;
+            color: #b0b0b0;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        .operation-workspace {
+            display: none;
+        }
+
+        .operation-workspace.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .workspace-header {
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .workspace-title {
+            font-size: 2.2em;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: center;
+        }
+
+        .matrix-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+            margin-bottom: 40px;
+        }
+
+        .matrix-inputs.single {
+            grid-template-columns: 1fr;
+            max-width: 550px;
+            margin: 0 auto 40px;
+        }
+
+        .matrix-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 18px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .matrix-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .matrix-header h4 {
+            color: #64b5f6;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 18px;
+        }
+
+        .size-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .size-controls input {
+            width: 70px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(100, 181, 246, 0.3);
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .size-controls input:focus {
+            outline: none;
+            border-color: #64b5f6;
+            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+        }
+
+        .size-controls span {
+            color: #64b5f6;
+            font-weight: 700;
+            font-size: 1.4em;
+        }
+
+        .matrix-grid {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin: 25px 0;
+        }
+
+        .matrix-grid input {
+            width: 75px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1em;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .matrix-grid input:focus {
+            outline: none;
+            border-color: #64b5f6;
+            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 35px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.05em;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #64b5f6, #1976d2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(100, 181, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(100, 181, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .result-section {
+            background: linear-gradient(135deg, rgba(100, 181, 246, 0.1), rgba(233, 30, 99, 0.05));
+            border: 1px solid rgba(100, 181, 246, 0.2);
+            border-radius: 18px;
+            padding: 30px;
+            margin-top: 35px;
+            display: none;
+        }
+
+        .result-section.active {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .result-header h3 {
+            color: #64b5f6;
+            font-size: 1.8em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .result-grid {
+            display: grid;
+            gap: 10px;
+            justify-content: center;
+            margin: 25px 0;
+        }
+
+        .result-cell {
+            width: 90px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(100, 181, 246, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 1em;
+        }
+
+        .scalar-result {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #64b5f6;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 40px;
+            margin: 25px 0;
+            border: 1px solid rgba(100, 181, 246, 0.2);
+        }
+
+        .error {
+            background: rgba(233, 30, 99, 0.15);
+            border: 1px solid rgba(233, 30, 99, 0.3);
+            color: #ff6b9d;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .square-note {
+            text-align: center;
+            color: #e91e63;
+            font-size: 0.95em;
+            font-weight: 500;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+            
+            .sidebar {
+                position: static;
+                order: 1;
+            }
+            
+            .matrix-inputs {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .main-content, .sidebar {
+                padding: 25px;
+            }
+            
+            .welcome-screen h2 {
+                font-size: 2.2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <h1>🔢 Matrix Operations</h1>
+                <p>Perform advanced matrix calculations with precision and style!</p>
+            </div>
+            
+            <div class="operations-section">
+                <h3>📊 Select Operation</h3>
+                
+                <button class="operation-btn" onclick="selectOperation('addition')">
+                    <span>➕</span>
+                    <div>
+                        <div>Addition</div>
+                        <small style="opacity: 0.7;">A + B</small>
+                    </div>
+                </button>
+                
+                <button class="operation-btn" onclick="selectOperation('subtraction')">
+                    <span>➖</span>
+                    <div>
+                        <div>Subtraction</div>
+                        <small style="opacity: 0.7;">A - B</small>
+                    </div>
+                </button>
+                
+                <button class="operation-btn" onclick="selectOperation('multiplication')">
+                    <span>✖️</span>
+                    <div>
+                        <div>Multiplication</div>
+                        <small style="opacity: 0.7;">A × B</small>
+                    </div>
+                </button>
+                
+                <button class="operation-btn" onclick="selectOperation('transpose')">
+                    <span>🔄</span>
+                    <div>
+                        <div>Transpose</div>
+                        <small style="opacity: 0.7;">A^T</small>
+                    </div>
+                </button>
+                
+                <button class="operation-btn" onclick="selectOperation('determinant')">
+                    <span>📐</span>
+                    <div>
+                        <div>Determinant</div>
+                        <small style="opacity: 0.7;">det(A)</small>
+                    </div>
+                </button>
+                
+                <button class="operation-btn" onclick="selectOperation('inverse')">
+                    <span>🔁</span>
+                    <div>
+                        <div>Inverse</div>
+                        <small style="opacity: 0.7;">A^(-1)</small>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="history-section">
+                <h3>📚 History</h3>
+                <button class="clear-history-btn" onclick="clearHistory()">
+                    🗑️ Clear History
+                </button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="welcome-screen" class="welcome-screen">
+                <h2>🎯 Matrix Calculator</h2>
+                <p>Choose an operation from the sidebar to begin your matrix calculations!</p>
+            </div>
+            
+            <div id="operation-workspace" class="operation-workspace">
+                <div class="workspace-header">
+                    <h2 id="workspace-title" class="workspace-title">Matrix Operation</h2>
+                </div>
+                
+                <div id="matrix-inputs" class="matrix-inputs">
+                    <!-- Dynamic matrix inputs -->
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="calculate()">✨ Calculate</button>
+                    <button class="btn btn-secondary" onclick="clearInputs()">🧹 Clear</button>
+                    <button class="btn btn-secondary" onclick="randomFill()">🎲 Random</button>
+                    <button class="btn btn-secondary" onclick="goBack()">← Back</button>
+                </div>
+                
+                <div id="result-section" class="result-section">
+                    <div class="result-header">
+                        <h3 id="result-title">📈 Result</h3>
+                    </div>
+                    <div id="result-content">
+                        <!-- Results display here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentOperation = null;
+        let history = [];
+
+        function selectOperation(operation) {
+            currentOperation = operation;
+            
+            // Update UI
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('operation-workspace').classList.add('active');
+            
+            // Update active button
+            document.querySelectorAll('.operation-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.operation-btn').classList.add('active');
+            
+            // Set title and create inputs
+            const titles = {
+                'addition': '➕ Matrix Addition (A + B)',
+                'subtraction': '➖ Matrix Subtraction (A - B)',
+                'multiplication': '✖️ Matrix Multiplication (A × B)',
+                'transpose': '🔄 Matrix Transpose (A^T)',
+                'determinant': '📐 Matrix Determinant (det A)',
+                'inverse': '🔁 Matrix Inverse (A^(-1))'
+            };
+            
+            document.getElementById('workspace-title').textContent = titles[operation];
+            
+            if (['addition', 'subtraction', 'multiplication'].includes(operation)) {
+                createTwoMatrixInputs();
+            } else {
+                createSingleMatrixInput(operation === 'determinant' || operation === 'inverse');
+            }
+            
+            hideResult();
+        }
+
+        function createTwoMatrixInputs() {
+            const container = document.getElementById('matrix-inputs');
+            container.className = 'matrix-inputs';
+            container.innerHTML = `
+                <div class="matrix-container">
+                    <div class="matrix-header">
+                        <h4>Matrix A</h4>
+                        <div class="size-controls">
+                            <input type="number" id="rowsA" value="3" min="1" max="5" onchange="createMatrixGrid('A')">
+                            <span>×</span>
+                            <input type="number" id="colsA" value="3" min="1" max="5" onchange="createMatrixGrid('A')">
+                        </div>
+                    </div>
+                    <div id="matrixA" class="matrix-grid"></div>
+                </div>
+                <div class="matrix-container">
+                    <div class="matrix-header">
+                        <h4>Matrix B</h4>
+                        <div class="size-controls">
+                            <input type="number" id="rowsB" value="3" min="1" max="5" onchange="createMatrixGrid('B')">
+                            <span>×</span>
+                            <input type="number" id="colsB" value="3" min="1" max="5" onchange="createMatrixGrid('B')">
+                        </div>
+                    </div>
+                    <div id="matrixB" class="matrix-grid"></div>
+                </div>
+            `;
+            createMatrixGrid('A');
+            createMatrixGrid('B');
+        }
+
+        function createSingleMatrixInput(squareOnly = false) {
+            const container = document.getElementById('matrix-inputs');
+            container.className = 'matrix-inputs single';
+            container.innerHTML = `
+                <div class="matrix-container">
+                    <div class="matrix-header">
+                        <h4>Matrix A</h4>
+                        <div class="size-controls">
+                            <input type="number" id="rowsA" value="3" min="1" max="5" onchange="${squareOnly ? 'syncSquareMatrix()' : 'createMatrixGrid(\'A\')'}">
+                            <span>×</span>
+                            <input type="number" id="colsA" value="3" min="1" max="5" onchange="${squareOnly ? 'syncSquareMatrix()' : 'createMatrixGrid(\'A\')'}">
+                        </div>
+                        ${squareOnly ? '<div class="square-note">* Square matrix required for this operation</div>' : ''}
+                    </div>
+                    <div id="matrixA" class="matrix-grid"></div>
+                </div>
+            `;
+            createMatrixGrid('A');
+        }
+
+        function syncSquareMatrix() {
+            const rows = document.getElementById('rowsA');
+            const cols = document.getElementById('colsA');
+            cols.value = rows.value;
+            createMatrixGrid('A');
+        }
+
+        function createMatrixGrid(matrix) {
+            const rows = parseInt(document.getElementById(`rows${matrix}`).value);
+            const cols = parseInt(document.getElementById(`cols${matrix}`).value);
+            const container = document.getElementById(`matrix${matrix}`);
+            
+            container.style.gridTemplateColumns = `repeat(${cols}, 75px)`;
+            container.innerHTML = '';
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.step = '0.01';
+                    input.value = '0';
+                    input.id = `${matrix}_${i}_${j}`;
+                    container.appendChild(input);
+                }
+            }
+        }
+
+        function getMatrix(matrix) {
+            const rows = parseInt(document.getElementById(`rows${matrix}`).value);
+            const cols = parseInt(document.getElementById(`cols${matrix}`).value);
+            const result = [];
+            
+            for (let i = 0; i < rows; i++) {
+                result[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    const value = parseFloat(document.getElementById(`${matrix}_${i}_${j}`).value) || 0;
+                    result[i][j] = value;
+                }
+            }
+            return result;
+        }
+
+        function displayResult(result, title) {
+            const section = document.getElementById('result-section');
+            const content = document.getElementById('result-content');
+            const titleElement = document.getElementById('result-title');
+            
+            titleElement.textContent = `📈 ${title}`;
+            
+            if (typeof result === 'number') {
+                content.innerHTML = `<div class="scalar-result">${result.toFixed(6)}</div>`;
+            } else if (Array.isArray(result)) {
+                const rows = result.length;
+                const cols = result[0].length;
+                
+                let gridHTML = `<div class="result-grid" style="grid-template-columns: repeat(${cols}, 90px);">`;
+                for (let i = 0; i < rows; i++) {
+                    for (let j = 0; j < cols; j++) {
+                        gridHTML += `<div class="result-cell">${result[i][j].toFixed(3)}</div>`;
+                    }
+                }
+                gridHTML += '</div>';
+                
+                content.innerHTML = gridHTML;
+            }
+            
+            section.classList.add('active');
+        }
+
+        function showError(message) {
+            const content = document.getElementById('result-content');
+            document.getElementById('result-title').textContent = '❌ Error';
+            content.innerHTML = `<div class="error">${message}</div>`;
+            document.getElementById('result-section').classList.add('active');
+        }
+
+        function hideResult() {
+            document.getElementById('result-section').classList.remove('active');
+        }
+
+        function clearInputs() {
+            const inputs = document.querySelectorAll('.matrix-grid input');
+            inputs.forEach(input => input.value = '0');
+            hideResult();
+        }
+
+        function randomFill() {
+            const inputs = document.querySelectorAll('.matrix-grid input');
+            inputs.forEach(input => {
+                input.value = (Math.random() * 10 - 5).toFixed(1);
+            });
+        }
+
+        function goBack() {
+            document.getElementById('operation-workspace').classList.remove('active');
+            document.getElementById('welcome-screen').style.display = 'flex';
+            document.querySelectorAll('.operation-btn').forEach(btn => btn.classList.remove('active'));
+            currentOperation = null;
+        }
+
+        function clearHistory() {
+            history = [];
+            // Could add visual feedback here
+        }
+
+        function addToHistory(operation, result) {
+            history.push({ operation, result, timestamp: new Date() });
+            // Could display history in UI
+        }
+
+        function calculate() {
+            try {
+                const matrixA = getMatrix('A');
+                let result, title;
+                
+                switch (currentOperation) {
+                    case 'addition':
+                        const matrixB_add = getMatrix('B');
+                        if (matrixA.length !== matrixB_add.length || matrixA[0].length !== matrixB_add[0].length) {
+                            showError('Matrices must have the same dimensions for addition');
+                            return;
+                        }
+                        result = matrixAdd(matrixA, matrixB_add);
+                        title = 'A + B';
+                        break;
+                        
+                    case 'subtraction':
+                        const matrixB_sub = getMatrix('B');
+                        if (matrixA.length !== matrixB_sub.length || matrixA[0].length !== matrixB_sub[0].length) {
+                            showError('Matrices must have the same dimensions for subtraction');
+                            return;
+                        }
+                        result = matrixSubtract(matrixA, matrixB_sub);
+                        title = 'A - B';
+                        break;
+                        
+                    case 'multiplication':
+                        const matrixB_mul = getMatrix('B');
+                        if (matrixA[0].length !== matrixB_mul.length) {
+                            showError('Columns in A must equal rows in B for multiplication');
+                            return;
+                        }
+                        result = matrixMultiply(matrixA, matrixB_mul);
+                        title = 'A × B';
+                        break;
+                        
+                    case 'transpose':
+                        result = matrixTranspose(matrixA);
+                        title = 'A^T';
+                        break;
+                        
+                    case 'determinant':
+                        if (matrixA.length !== matrixA[0].length) {
+                            showError('Matrix must be square for determinant');
+                            return;
+                        }
+                        result = matrixDeterminant(matrixA);
+                        title = 'Determinant of A';
+                        break;
+                        
+                    case 'inverse':
+                        if (matrixA.length !== matrixA[0].length) {
+                            showError('Matrix must be square for inverse');
+                            return;
+                        }
+                        const det = matrixDeterminant(matrixA);
+                        if (Math.abs(det) < 1e-10) {
+                            showError('Matrix is singular (determinant ≈ 0) and cannot be inverted');
+                            return;
+                        }
+                        result = matrixInverse(matrixA);
+                        title = 'A^(-1)';
+                        break;
+                }
+                
+                displayResult(result, title);
+                addToHistory(currentOperation, result);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Matrix operation functions
+        function matrixAdd(a, b) {
+            const result = [];
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < a[0].length; j++) {
+                    result[i][j] = a[i][j] + b[i][j];
+                }
+            }
+            return result;
+        }
+
+        function matrixSubtract(a, b) {
+            const result = [];
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < a[0].length; j++) {
+                    result[i][j] = a[i][j] - b[i][j];
+                }
+            }
+            return result;
+        }
+
+        function matrixMultiply(a, b) {
+            const result = [];
+            for (let i = 0; i < a.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < b[0].length; j++) {
+                    result[i][j] = 0;
+                    for (let k = 0; k < a[0].length; k++) {
+                        result[i][j] += a[i][k] * b[k][j];
+                    }
+                }
+            }
+            return result;
+        }
+
+        function matrixTranspose(a) {
+            const result = [];
+            for (let i = 0; i < a[0].length; i++) {
+                result[i] = [];
+                for (let j = 0; j < a.length; j++) {
+                    result[i][j] = a[j][i];
+                }
+            }
+            return result;
+        }
+
+        function matrixDeterminant(matrix) {
+            const n = matrix.length;
+            if (n === 1) return matrix[0][0];
+            if (n === 2) return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+            
+            let det = 0;
+            for (let i = 0; i < n; i++) {
+                const minor = getMinor(matrix, 0, i);
+                det += (i % 2 === 0 ? 1 : -1) * matrix[0][i] * matrixDeterminant(minor);
+            }
+            return det;
+        }
+
+        function getMinor(matrix, row, col) {
+            const minor = [];
+            for (let i = 0; i < matrix.length; i++) {
+                if (i === row) continue;
+                const newRow = [];
+                for (let j = 0; j < matrix[i].length; j++) {
+                    if (j === col) continue;
+                    newRow.push(matrix[i][j]);
+                }
+                minor.push(newRow);
+            }
+            return minor;
+        }
+
+        function matrixInverse(matrix) {
+            const n = matrix.length;
+            const augmented = [];
+            
+            // Create augmented matrix [A|I]
+            for (let i = 0; i < n; i++) {
+                augmented[i] = [];
+                for (let j = 0; j < n; j++) {
+                    augmented[i][j] = matrix[i][j];
+                }
+                for (let j = 0; j < n; j++) {
+                    augmented[i][n + j] = (i === j) ? 1 : 0;
+                }
+            }
+            
+            // Gauss-Jordan elimination
+            for (let i = 0; i < n; i++) {
+                // Find pivot
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) {
+                    if (Math.abs(augmented[k][i]) > Math.abs(augmented[maxRow][i])) {
+                        maxRow = k;
+                    }
+                }
+                
+                // Swap rows
+                [augmented[i], augmented[maxRow]] = [augmented[maxRow], augmented[i]];
+                
+                // Make diagonal element 1
+                const pivot = augmented[i][i];
+                for (let j = 0; j < 2 * n; j++) {
+                    augmented[i][j] /= pivot;
+                }
+                
+                // Eliminate column
+                for (let k = 0; k < n; k++) {
+                    if (k !== i) {
+                        const factor = augmented[k][i];
+                        for (let j = 0; j < 2 * n; j++) {
+                            augmented[k][j] -= factor * augmented[i][j];
+                        }
+                    }
+                }
+            }
+            
+            // Extract inverse matrix
+            const inverse = [];
+            for (let i = 0; i < n; i++) {
+                inverse[i] = [];
+                for (let j = 0; j < n; j++) {
+                    inverse[i][j] = augmented[i][n + j];
+                }
+            }
+            
+            return inverse;
+        }
+    </script>
+</body>
+</html>
