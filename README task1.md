@@ -26,5 +26,5 @@ import seaborn as sns
 
 ## Author
 Created by Chandana Gowri D A
-Focused on clarity, reproducible analysis, and interactive tools in Python and web development.
+Focused on clarity, reproducible analysis, and interactive tools in ML and Python development.
 
